@@ -11,7 +11,9 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 
 public interface APIService {
-
         @GET("v4/spreadsheets/"+ SPREADSHEET_ID+"/values/"+ APIConfig.SPREADSHEET_LIST_ID +"key="+ KeyAPI.GOOGLE_API_KEY)
         Call<DataResponse> getData();
+
+        @GET("v4/spreadsheets/"+ SPREADSHEET_ID+"/values/"+ "{list}"+"key="+ KeyAPI.GOOGLE_API_KEY)
+        Call<DataResponse> getData(@Path("list") String list);
 }
