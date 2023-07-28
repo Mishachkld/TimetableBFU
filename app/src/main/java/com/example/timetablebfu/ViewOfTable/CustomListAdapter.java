@@ -1,5 +1,6 @@
 package com.example.timetablebfu.ViewOfTable;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ public class CustomListAdapter extends ArrayAdapter<String> {
     private List<String> days;
     //    private String[] lessons;
     private String[] lessons;
+    private String[] homework;
     private int[] id;
     private ArrayList<? extends ScheduleList> list;
 
@@ -46,15 +48,19 @@ public class CustomListAdapter extends ArrayAdapter<String> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater = context.getLayoutInflater();  // получаем макет
-        View rowView = inflater.inflate(R.layout.custom_list_item, null, true);  // хуй знает что мы делаем (навеное раздуваем разметку)
+        @SuppressLint({"ViewHolder", "InflateParams"}) View rowView = inflater.inflate(R.layout.custom_list_item, null, true);  // хуй знает что мы делаем (навеное раздуваем разметку)
 
-        AppCompatTextView num = rowView.findViewById(R.id.title_position);
+        TextView num = rowView.findViewById(R.id.title_position);
         TextView titleText = rowView.findViewById(R.id.title_text);
-        TextView subtitleText = rowView.findViewById(R.id.lessons);
+        TextView homeWorkText = rowView.findViewById(R.id.homework);
+        TextView lessonsText = rowView.findViewById(R.id.lessons);
+
         if (!list.isEmpty()) {
             titleText.setText(days.get(position));
-            subtitleText.setText(lessons[position]);
-            num.setText(new StringBuilder(id[position] + "."));
+            lessonsText.setText(lessons[position]);
+            homeWorkText.setText(homework[position]);
+//            num.setText(new StringBuilder(id[position] + "."));
+            num.setText("");
         }
         return rowView;
     }
@@ -62,11 +68,13 @@ public class CustomListAdapter extends ArrayAdapter<String> {
     private void getAllResources() {  // подумать как можно сделать через HashMap!!!
         //HashMap<String, String> oneDay = new HashMap<>();
         //days = new String[list.size()];
+        homework = new String[list.size()];
         lessons = new String[list.size()];
         id = new int[list.size()];
         for (int i = 0; i < list.size(); i++) {
             //days[i] = list.get(i).getNameOfWeek();
-            lessons[i] = list.get(i).getHomeWork();
+            lessons[i] = list.get(i).getLessons();
+            homework[i] = list.get(i).getHomeWork();
             id[i] = list.get(i).getId();
         }
     }

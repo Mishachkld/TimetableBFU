@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
     }
 
     private void loadData() {
-        List<String> days = new ArrayList<String>();
+        List<String> days = new ArrayList<>();
         call = service.getData();
         call.enqueue(new Callback<DataResponse>() {
             @Override
@@ -128,44 +128,45 @@ public class MainActivity extends Activity {
                                         date.add(response.body().values.get(i).get(j));
                                     break;
                                 case 1:
-                                    dataLessons.append(item).append("\n");
                                     counter++;
-                                    if ((counter == 5) | (j == (response.body().values.get(i).size()) - 1)) {
-                                        homework.add(dataLessons.toString());
-                                        counter = 0;
-                                        dataLessons = new StringBuilder();
-                                    }
-                                    break;
-                                case 2:
-                                    dataLessons.append(item).append("\n");
-                                    counter++;
+                                    dataLessons.append(counter).append(".").append(item).append("\n");
                                     if ((counter == 5) | (j == (response.body().values.get(i).size()) - 1)) {
                                         lessons.add(dataLessons.toString());
                                         counter = 0;
                                         dataLessons = new StringBuilder();
                                     }
                                     break;
+                                case 2:
+                                    counter++;
+                                    dataLessons.append(counter).append(".").append(item).append("\n");
+                                    if ((counter == 5) | (j == (response.body().values.get(i).size()) - 1)) {
+                                        homework.add(dataLessons.toString());
+                                        counter = 0;
+                                        dataLessons = new StringBuilder();
+                                    }
+                                    break;
+
                             }
                         }
                     }
-
                     while (date.size() > lessons.size())
                         lessons.add("Not Found 404");
-                    for (int i = 0; i < lessons.size(); i++) {
-                        res.add(new ScheduleList(i, date.get(i), lessons.get(i)));
-                    }
-
+                    while (date.size() > homework.size())
+                        homework.add("Not Found 404");
+                    for (int i = 0; i < lessons.size(); i++)
+                        res.add(new ScheduleList(i, date.get(i), lessons.get(i), homework.get(i)));
                     setAdapter(date);
                 }
             }
-                @Override
-                public void onFailure (Call < DataResponse > call, Throwable t){
-                    Snackbar.make(list_timetable, "Errrorrr....", Snackbar.LENGTH_LONG).show();
-                }
-            });
+
+            @Override
+            public void onFailure(Call<DataResponse> call, Throwable t) {
+                Snackbar.make(list_timetable, "Errrorrr....", Snackbar.LENGTH_LONG).show();
+            }
+        });
 
         swipe.setRefreshing(false);
-        }
-
-
     }
+
+
+}
