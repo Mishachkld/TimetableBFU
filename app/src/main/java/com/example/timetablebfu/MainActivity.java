@@ -110,6 +110,7 @@ public class MainActivity extends Activity {
         List<String> date = new ArrayList<>();
         List<String> homework = new ArrayList<>();
         List<String> lessons = new ArrayList<>();
+        res = new ArrayList<>();
 
         call = service.getData();
         call.enqueue(new Callback<DataResponse>() {
@@ -118,7 +119,7 @@ public class MainActivity extends Activity {
                 if (response.body() != null) {
                     for (int i = 0; i < response.body().values.size(); i++) {
                         int counter = 0;
-                        String dataLessons = "";
+                        StringBuilder dataLessons = new StringBuilder();
                         for (int j = 0; j < response.body().values.get(i).size(); j++) {
                             String item = response.body().values.get(i).get(j);
                             switch (i) {
@@ -127,21 +128,21 @@ public class MainActivity extends Activity {
                                         date.add(response.body().values.get(i).get(j));
                                     break;
                                 case 1:
-                                    dataLessons += item + "\n";
+                                    dataLessons.append(item).append("\n");
                                     counter++;
                                     if ((counter == 5) | (j == (response.body().values.get(i).size()) - 1)) {
-                                        homework.add(dataLessons);
+                                        homework.add(dataLessons.toString());
                                         counter = 0;
-                                        dataLessons = "";
+                                        dataLessons = new StringBuilder();
                                     }
                                     break;
                                 case 2:
-                                    dataLessons += item + "\n";
+                                    dataLessons.append(item).append("\n");
                                     counter++;
                                     if ((counter == 5) | (j == (response.body().values.get(i).size()) - 1)) {
-                                        lessons.add(dataLessons);
+                                        lessons.add(dataLessons.toString());
                                         counter = 0;
-                                        dataLessons = "";
+                                        dataLessons = new StringBuilder();
                                     }
                                     break;
                             }
