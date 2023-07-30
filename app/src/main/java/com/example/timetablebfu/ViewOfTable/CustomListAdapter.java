@@ -48,7 +48,7 @@ public class CustomListAdapter extends ArrayAdapter<String> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater = context.getLayoutInflater();  // получаем макет
-        @SuppressLint({"ViewHolder", "InflateParams"}) View rowView = inflater.inflate(R.layout.custom_list_item, null, true);  // хуй знает что мы делаем (навеное раздуваем разметку)
+            @SuppressLint({"ViewHolder", "InflateParams"}) View rowView = inflater.inflate(R.layout.custom_list_item, null, true);  // хуй знает что мы делаем (навеное раздуваем разметку)
 
         TextView num = rowView.findViewById(R.id.title_position);
         TextView titleText = rowView.findViewById(R.id.title_text);
