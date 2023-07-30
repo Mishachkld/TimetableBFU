@@ -2,6 +2,7 @@ package com.example.timetablebfu;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -14,7 +15,6 @@ import android.widget.ListView;
 import com.example.timetablebfu.Components.ScheduleList;
 import com.example.timetablebfu.Constants.Constants;
 import com.example.timetablebfu.GoogleSheetAPI.APIConfig;
-import com.example.timetablebfu.GoogleSheetAPI.SheetsWork;
 import com.example.timetablebfu.GoogleSheetAPI.retrofit.APIService;
 import com.example.timetablebfu.GoogleSheetAPI.retrofit.DataResponse;
 import com.example.timetablebfu.ViewOfTable.CustomListAdapter;
@@ -87,7 +87,7 @@ public class TimetableListFragment extends Fragment {
         call = service.getData();
         call.enqueue(new Callback<DataResponse>() {
             @Override
-            public void onResponse(Call<DataResponse> call, Response<DataResponse> response) {
+            public void onResponse(@NonNull Call<DataResponse> call, @NonNull Response<DataResponse> response) {
                 if (response.body() != null) {
                     for (int i = 0; i < response.body().values.size(); i++) {
                         int counter = 0;
@@ -127,7 +127,7 @@ public class TimetableListFragment extends Fragment {
                     for (int i = 0; i < lessons.size(); i++)
                         res.add(new ScheduleList(i, date.get(i), lessons.get(i), homework.get(i)));
                     swipe.setRefreshing(false);
-                    setAdapter(date);  /// это как то вообще не праивльно выглядит, но по другому оно не работает, все элементы массивов исчезают
+                    setArrayAdapter(date);  /// это как то вообще не праивльно выглядит, но по другому оно не работает, все элементы массивов исчезают
                 }
 
             }
@@ -142,7 +142,7 @@ public class TimetableListFragment extends Fragment {
 
     }
 
-    private void setAdapter(List<String> days) {
+    private void setArrayAdapter(List<String> days) {
         /**ListView + ArrayAdapter**/
         if ((res != null) && !res.isEmpty()) {
             CustomListAdapter listAdapter = new CustomListAdapter(getActivity(), res, days);
@@ -158,6 +158,8 @@ public class TimetableListFragment extends Fragment {
         /**ListView + ArrayAdapter**/
     }
 
+    private void setRecyclerView(){
 
+    }
 
 }
