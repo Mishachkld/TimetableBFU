@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.timetablebfu.Components.ScheduleList;
 import com.example.timetablebfu.R;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.checkerframework.checker.units.qual.A;
 
@@ -31,23 +32,10 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
         getAllResources();
     }
 
-    private void getAllResources() {  // подумать как можно сделать через HashMap!!!
-        //HashMap<String, String> oneDay = new HashMap<>();
-        days = new ArrayList<>();
-        lessons = new ArrayList<>();
-        homework = new ArrayList<>();
-        for (int i = 0; i < res_list.size(); i++) {
-            days.add(res_list.get(i).getNameOfWeek());
-            lessons.add(res_list.get(i).getLessons());
-            homework.add(res_list.get(i).getHomeWork());
-        }
-    }
-
-
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.custom_list_item, viewGroup, false);
 
@@ -56,7 +44,7 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int position) {
         if (!res_list.isEmpty()) {
             viewHolder.getHomeWorkTextView().setText(homework.get(position));
             viewHolder.getLessonsTextView().setText(lessons.get(position));
@@ -73,6 +61,18 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
         return res_list.size();
     }
 
+    private void getAllResources() {  // подумать как можно сделать через HashMap!!!
+        //HashMap<String, String> oneDay = new HashMap<>();
+        days = new ArrayList<>();
+        lessons = new ArrayList<>();
+        homework = new ArrayList<>();
+        for (int i = 0; i < res_list.size(); i++) {
+            days.add(res_list.get(i).getNameOfWeek());
+            lessons.add(res_list.get(i).getLessons());
+            homework.add(res_list.get(i).getHomeWork());
+        }
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView dayOfWeakTextView;
@@ -83,9 +83,24 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
 
         public ViewHolder(View view) {
             super(view);
+
             dayOfWeakTextView = view.findViewById(R.id.title_text);
             lessonsTextView = view.findViewById(R.id.lessons);
             homeWorkTextView = view.findViewById(R.id.homework);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Snackbar.make(view, dayOfWeakTextView.getText(), Snackbar.LENGTH_LONG).show();
+                }
+            });
+            view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    Snackbar.make(view,"Element " + getAdapterPosition() + " clicked.", Snackbar.LENGTH_LONG).show();
+                    return true;
+                }
+            });
+
             // Define click listener for the ViewHolder's View
 
         }
@@ -103,6 +118,7 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
         }
 
     }
+
 
 
 }

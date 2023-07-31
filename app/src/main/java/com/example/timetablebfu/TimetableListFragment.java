@@ -38,7 +38,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class TimetableListFragment extends Fragment {
-    private ArrayList<ScheduleList> res ;
+    private ArrayList<ScheduleList> res;
     private APIService service;
     private Call<DataResponse> call;
     private Retrofit retrofit;
@@ -57,24 +57,12 @@ public class TimetableListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_listview, container, false);
-    }
-    public void setService4Sheet(APIService service, Call call, Retrofit retrofit){
-        this.service = service;
-        this.call = call;
-        this.retrofit = retrofit;
-    }
+        View rootView = inflater.inflate(R.layout.fragment_listview, container, false);
+        if (rootView != null) {
+            recyclerView = rootView.findViewById(R.id.timetable_list);
+            swipe = rootView.findViewById(R.id.swiperefresh);
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        View view = getView();
-        if (view != null) {
-            //list_timetable = view.findViewById(R.id.timetable_list);
-            recyclerView = view.findViewById(R.id.timetable_list);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            swipe = view.findViewById(R.id.swiperefresh);
             Retrofit retrofit = new Retrofit.Builder().baseUrl(APIConfig.URL)
                     .addConverterFactory(GsonConverterFactory.create()).build();
             service = retrofit.create(APIService.class);
@@ -86,17 +74,51 @@ public class TimetableListFragment extends Fragment {
                     getDataFromShit();
                 }
             });
+
+
         }
+        return rootView;
     }
 
-    private void getDataFromShit() {  /// оно почему то не работает, дата не собирается
+    public void setService4Sheet(APIService service,  Retrofit retrofit) {
+        this.service = service;
+        this.retrofit = retrofit;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        /*View view = getView();
+        if (view != null) {
+            //list_timetable = view.findViewById(R.id.timetable_list);
+            recyclerView = view.findViewById(R.id.timetable_list);
+            swipe = view.findViewById(R.id.swiperefresh);
+
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            Retrofit retrofit = new Retrofit.Builder().baseUrl(APIConfig.URL)
+                    .addConverterFactory(GsonConverterFactory.create()).build();
+            service = retrofit.create(APIService.class);
+            swipe.setRefreshing(true);
+            getDataFromShit();
+            swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    getDataFromShit();
+                }
+            });
+
+
+        }*/
+    }
+
+    private void getDataFromShit() {  /// мне не нравится способ обновления данных. Даныне остаютс только внутри аноннимного внутреннего класса
         List<String> date = new ArrayList<>();
         List<String> homework = new ArrayList<>();
         List<String> lessons = new ArrayList<>();
-        res = new    ArrayList<>();
+        res = new ArrayList<>();
 
 
-        //call = service.getData(APIConfig.SPREADSHEET_LIST_ID);
+        //call = service.getData(APIConfig.SPREADSHEET_LIST_ID, APIConfig.SPREADSHEET_MAJOR_DIMENSION);
         call = service.getData();
         call.enqueue(new Callback<DataResponse>() {
             @Override
@@ -171,7 +193,7 @@ public class TimetableListFragment extends Fragment {
         /**ListView + ArrayAdapter**/
     }
 
-    private void setRecyclerView(ArrayList<ScheduleList> res){
+    private void setRecyclerView(ArrayList<ScheduleList> res) {
         TimetableListAdapter adapter = new TimetableListAdapter(res);
         recyclerView.setAdapter(adapter);
     }
