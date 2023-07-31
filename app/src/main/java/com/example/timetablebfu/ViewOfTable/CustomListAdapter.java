@@ -50,7 +50,6 @@ public class CustomListAdapter extends ArrayAdapter<String> {
         LayoutInflater inflater = context.getLayoutInflater();  // получаем макет
             @SuppressLint({"ViewHolder", "InflateParams"}) View rowView = inflater.inflate(R.layout.custom_list_item, null, true);  // хуй знает что мы делаем (навеное раздуваем разметку)
 
-        TextView num = rowView.findViewById(R.id.title_position);
         TextView titleText = rowView.findViewById(R.id.title_text);
         TextView homeWorkText = rowView.findViewById(R.id.homework);
         TextView lessonsText = rowView.findViewById(R.id.lessons);
@@ -59,8 +58,6 @@ public class CustomListAdapter extends ArrayAdapter<String> {
             titleText.setText(days.get(position));
             lessonsText.setText(lessons[position]);
             homeWorkText.setText(homework[position]);
-//            num.setText(new StringBuilder(id[position] + "."));
-            num.setText("");
         }
         return rowView;
     }

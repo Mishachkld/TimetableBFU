@@ -4,6 +4,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.LayoutInflater;
@@ -18,8 +20,13 @@ import com.example.timetablebfu.GoogleSheetAPI.APIConfig;
 import com.example.timetablebfu.GoogleSheetAPI.retrofit.APIService;
 import com.example.timetablebfu.GoogleSheetAPI.retrofit.DataResponse;
 import com.example.timetablebfu.ViewOfTable.CustomListAdapter;
+import com.example.timetablebfu.ViewOfTable.TimetableListAdapter;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +45,8 @@ public class TimetableListFragment extends Fragment {
 
     private SwipeRefreshLayout swipe;
     private ListView list_timetable;
+
+    private RecyclerView recyclerView;
 
     public TimetableListFragment() {
         super(R.layout.fragment_listview);
@@ -62,7 +71,9 @@ public class TimetableListFragment extends Fragment {
         super.onStart();
         View view = getView();
         if (view != null) {
-            list_timetable = view.findViewById(R.id.timetable_list);
+            //list_timetable = view.findViewById(R.id.timetable_list);
+            recyclerView = view.findViewById(R.id.timetable_list);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             swipe = view.findViewById(R.id.swiperefresh);
             Retrofit retrofit = new Retrofit.Builder().baseUrl(APIConfig.URL)
                     .addConverterFactory(GsonConverterFactory.create()).build();
@@ -82,8 +93,10 @@ public class TimetableListFragment extends Fragment {
         List<String> date = new ArrayList<>();
         List<String> homework = new ArrayList<>();
         List<String> lessons = new ArrayList<>();
-        res = new ArrayList<>();
+        res = new    ArrayList<>();
 
+
+        //call = service.getData(APIConfig.SPREADSHEET_LIST_ID);
         call = service.getData();
         call.enqueue(new Callback<DataResponse>() {
             @Override
@@ -127,7 +140,7 @@ public class TimetableListFragment extends Fragment {
                     for (int i = 0; i < lessons.size(); i++)
                         res.add(new ScheduleList(i, date.get(i), lessons.get(i), homework.get(i)));
                     swipe.setRefreshing(false);
-                    setArrayAdapter(date);  /// это как то вообще не праивльно выглядит, но по другому оно не работает, все элементы массивов исчезают
+                    setRecyclerView(res);  /// это как то вообще не праивльно выглядит, но по другому оно не работает, все элементы массивов исчезают
                 }
 
             }
@@ -158,8 +171,9 @@ public class TimetableListFragment extends Fragment {
         /**ListView + ArrayAdapter**/
     }
 
-    private void setRecyclerView(){
-
+    private void setRecyclerView(ArrayList<ScheduleList> res){
+        TimetableListAdapter adapter = new TimetableListAdapter(res);
+        recyclerView.setAdapter(adapter);
     }
 
 }
