@@ -3,7 +3,9 @@
     <string name="some_string">Какой-то текст</string>
     <string name="num">N.</string>
     <string name="lessons">1.Lesson \n2.Lesson \n3.Lesson \n4.Lesson</string>
-    <string name="homework">1.Homework \n2.Homework \n3.Homework \n4.Homework</string>
+    <string name="lesson">Some lesson </string>
+    <string name="homeworks">1.Homework \n2.Homework \n3.Homework \n4.Homework</string>
+    <string name="homework">Some homework </string>
     <string-array name="lessons_array">
         <item>1.Lesson</item>
         <item>2.Lesson</item>
