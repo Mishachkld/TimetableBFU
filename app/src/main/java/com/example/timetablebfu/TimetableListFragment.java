@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,16 +20,9 @@ import com.example.timetablebfu.GoogleSheetAPI.APIConfig;
 import com.example.timetablebfu.GoogleSheetAPI.SheetsWork;
 import com.example.timetablebfu.GoogleSheetAPI.retrofit.APIService;
 import com.example.timetablebfu.GoogleSheetAPI.retrofit.DataResponse;
-import com.example.timetablebfu.ViewOfTable.CustomListAdapter;
 import com.example.timetablebfu.ViewOfTable.TimetableListAdapter;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,15 +34,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class TimetableListFragment extends Fragment {
-    private ArrayList<ScheduleList> res;
+    private List<ScheduleList> res;
     private APIService service;
+    private SwipeRefreshLayout swipe;
     private Call<DataResponse> call;
     private Retrofit retrofit;
-
-    private SwipeRefreshLayout swipe;
-    private ListView list_timetable;
+    private TimetableListAdapter adapter;
     private List<String> date;
-    private List<String> homework ;
+    private List<String> homework;
     private List<String> lessons;
     private RecyclerView recyclerView;
 
@@ -67,12 +58,16 @@ public class TimetableListFragment extends Fragment {
         if (rootView != null) {
             recyclerView = rootView.findViewById(R.id.timetable_list);
             swipe = rootView.findViewById(R.id.swiperefresh);
-
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            Retrofit retrofit = new Retrofit.Builder().baseUrl(APIConfig.URL)
+            swipe.setRefreshing(true);
+            adapter = new TimetableListAdapter();
+            recyclerView.setAdapter(adapter);
+
+            res = new ArrayList<>();
+            retrofit = new Retrofit.Builder().baseUrl(APIConfig.URL)
                     .addConverterFactory(GsonConverterFactory.create()).build();
             service = retrofit.create(APIService.class);
-            swipe.setRefreshing(true);
+            SheetsWork dataSheets = new SheetsWork();
             getDataFromShit();
             swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
@@ -80,35 +75,19 @@ public class TimetableListFragment extends Fragment {
                     getDataFromShit();
                 }
             });
-            try {
-                SheetsWork sheetsWork = new SheetsWork(getContext());
-            } catch (GeneralSecurityException | IOException e) {
-                Log.d("ERROR: ", "Somthing go wrong with data" + e.getMessage());
-                Snackbar.make(swipe, "Errorororoororr////", Snackbar.LENGTH_LONG).show();
-            }
 
         }
         return rootView;
     }
 
-    public void setService4Sheet(APIService service, Retrofit retrofit) {
-        this.service = service;
-        this.retrofit = retrofit;
-    }
-
-
-
-    private void getDataFromShit() {  /// мне не нравится способ обновления данных. Даныне остаютс только внутри аноннимного внутреннего класса
+    private void getDataFromShit() {  /// мне не нравится способ обновления данных. Даныне остаются только внутри аноннимного внутреннего класса
         ArrayList<String> date = new ArrayList<>();
         ArrayList<String> homework = new ArrayList<>();
         ArrayList<String> lessons = new ArrayList<>();
         List<List<String>> data = new ArrayList<>();
-        res = new ArrayList<>();
-
 
 
         call = service.getData(APIConfig.SPREADSHEET_LIST_ID);
-        //call = service.getData();
         call.enqueue(new Callback<DataResponse>() {
             @Override
             public void onResponse(@NonNull Call<DataResponse> call, @NonNull Response<DataResponse> response) {
@@ -148,7 +127,9 @@ public class TimetableListFragment extends Fragment {
                         lessons.add("Not Found 404");
                     while (date.size() > homework.size())
                         homework.add("Not Found 404");
-                    data.add(date);data.add(lessons); data.add(homework);
+                    data.add(date);
+                    data.add(lessons);
+                    data.add(homework);
                    /* for (int i = 0; i < lessons.size(); i++)
                         res.add(new ScheduleList(i, date.get(i), lessons.get(i), homework.get(i)));*/
                     //setRecyclerView(res);  /// это как то вообще не праивльно выглядит, но по другому оно не работает, все элементы массивов исчезают
@@ -160,7 +141,7 @@ public class TimetableListFragment extends Fragment {
 
             @Override
             public void onFailure(Call<DataResponse> call, Throwable t) {
-                Snackbar.make(list_timetable, "Errrorrr....", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(recyclerView, "Errrorrr....", Snackbar.LENGTH_LONG).show();
                 swipe.setRefreshing(false);
 
             }
@@ -168,25 +149,26 @@ public class TimetableListFragment extends Fragment {
         //setRecyclerView(res);
     }
 
-    private void getData(List<List<String>> data){
-            for (int i = 0; i < data.size(); i++)
-                switch (i){
-                    case 0:
-                        date = data.get(i);
-                        break;
-                    case 1:
-                        lessons = data.get(i);
-                        break;
-                    case 2:
-                        homework = data.get(i);
-                        break;
-                }
+    private void getData(List<List<String>> data) {
+        for (int i = 0; i < data.size(); i++)
+            switch (i) {
+                case 0:
+                    date = data.get(i);
+                    break;
+                case 1:
+                    lessons = data.get(i);
+                    break;
+                case 2:
+                    homework = data.get(i);
+                    break;
+            }
         for (int i = 0; i < date.size(); i++)
             res.add(new ScheduleList(i, date.get(i), lessons.get(i), homework.get(i)));
-       setRecyclerView(res);
+        setRecyclerView(res);
     }
-    private void setArrayAdapter(List<String> days) {
-        /**ListView + ArrayAdapter**/
+
+    /*private void setArrayAdapter(List<String> days) {
+     *//**ListView + ArrayAdapter**//*
         if ((res != null) && !res.isEmpty()) {
             CustomListAdapter listAdapter = new CustomListAdapter(getActivity(), res, days);
             list_timetable.setAdapter(listAdapter);
@@ -198,13 +180,15 @@ public class TimetableListFragment extends Fragment {
             });
         } else
             Snackbar.make(list_timetable, "Data not found", Snackbar.LENGTH_LONG).show();
-        /**ListView + ArrayAdapter**/
+        */
+
+    /**
+     * ListView + ArrayAdapter
+     **//*
     }
-
-    private void setRecyclerView(ArrayList<ScheduleList> res) {
-        TimetableListAdapter adapter = new TimetableListAdapter(res);
-
-        recyclerView.setAdapter(adapter);
+*/
+    private void setRecyclerView(List<ScheduleList> res) {
+        adapter.updateAdapter(res);
     }
 
 }

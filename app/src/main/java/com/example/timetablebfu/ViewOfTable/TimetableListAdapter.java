@@ -1,5 +1,6 @@
 package com.example.timetablebfu.ViewOfTable;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -21,14 +22,19 @@ import java.util.List;
 
 public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdapter.ViewHolder> {
 
-    private ArrayList<String> lessons;
-    private ArrayList<String> homework;
-    private ArrayList<String> days;
-    private final ArrayList<? extends ScheduleList> res_list;
+    private List<String> lessons;
+    private List<String> homework;
+    private List<String> days;
+    private List<? extends ScheduleList> res_list;
 
 
-    public TimetableListAdapter(ArrayList<ScheduleList> res) {
+    public TimetableListAdapter(List<ScheduleList> res) {
         this.res_list = res;
+        getAllResources();
+    }
+
+    public TimetableListAdapter() {
+        this.res_list = new ArrayList<>();
         getAllResources();
     }
 
@@ -45,7 +51,7 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int position) {
-        if (!res_list.isEmpty()) {
+        if (!res_list.isEmpty() && (position < homework.size()) && (position < lessons.size()) && (position < days.size())) {
             viewHolder.getHomeWorkTextView().setText(homework.get(position));
             viewHolder.getLessonsTextView().setText(lessons.get(position));
             viewHolder.getDayOfWeakTextView().setText(days.get(position));
@@ -73,12 +79,18 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    public void updateAdapter(List<ScheduleList> res_list) {
+        this.res_list = res_list;
+        getAllResources();
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView dayOfWeakTextView;
         private final TextView lessonsTextView;
         private final TextView homeWorkTextView;
-
 
 
         public ViewHolder(View view) {
@@ -96,7 +108,7 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
             view.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    Snackbar.make(view,"Element " + getAdapterPosition() + " clicked.", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(view, "Element " + getAdapterPosition() + " clicked.", Snackbar.LENGTH_LONG).show();
                     return true;
                 }
             });
@@ -118,7 +130,6 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
         }
 
     }
-
 
 
 }

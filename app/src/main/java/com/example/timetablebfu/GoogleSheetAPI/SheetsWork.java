@@ -2,56 +2,52 @@ package com.example.timetablebfu.GoogleSheetAPI;
 
 import static com.example.timetablebfu.Constants.Constants.PREF_ACCOUNT_NAME;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.example.timetablebfu.Components.ScheduleList;
+import com.example.timetablebfu.Constants.Constants;
 import com.example.timetablebfu.GoogleSheetAPI.retrofit.APIService;
 import com.example.timetablebfu.GoogleSheetAPI.retrofit.DataResponse;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.api.services.tasks.TasksScopes;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class SheetsWork {
+public class SheetsWork {  /// Короче, нужно разобраться с Creditions, он позволяет облегчить запросы и т.д.
+    // Делаем через GET запросы все.
 
     private static final String APPLICATION_NAME = "BFU Timetable";
 
     public static List<String> days;
-
-    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private Sheets sheetService;
     private String range;
     private String spreadsheetId;
     private static InputStream in;
-    private List<List<Object>> values;
-
-    private ArrayList<ScheduleList> res = new ArrayList<ScheduleList>();
-    private APIService service;
+    private List<ScheduleList> res;
     private Call<DataResponse> call;
+    private APIService service;
     private Retrofit retrofit;
+
 
     private List<String> date = new ArrayList<>();
     private List<String> homework = new ArrayList<>();
@@ -64,9 +60,14 @@ public class SheetsWork {
 
     }
 
-    public SheetsWork(Context context) throws GeneralSecurityException, IOException {
-        sheetService = getSheetsService(authorize(context));
+    public SheetsWork() {
+        try {
+            getData(getDataFromShit());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     private void defaultSettings() {
         retrofit = new Retrofit.Builder().baseUrl(APIConfig.URL)
@@ -77,27 +78,122 @@ public class SheetsWork {
         lessons = new ArrayList<>();
     }
 
-    private static GoogleAccountCredential authorize(Context context)  {
-     GoogleAccountCredential credential =
-                GoogleAccountCredential.usingOAuth2(context, Collections.singleton(TasksScopes.TASKS));
-        SharedPreferences settings = credential.getContext().getSharedPreferences(null, Context.MODE_PRIVATE);
-        credential.setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
-        return credential;
+    private static Retrofit getRetrofit(String url) {
+        return new Retrofit.Builder().baseUrl(url).addConverterFactory(GsonConverterFactory.create()).build();
     }
 
-    private Sheets getSheetsService(GoogleAccountCredential credential) throws GeneralSecurityException, IOException {
-        return new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(), JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+
+    private List<List<String>> getDataFromShit() throws IOException {  // вероятно лучше его сделать статическим, т.к. смысла от создания экземпляра класса особо нет
+        Retrofit retrofit = getRetrofit(APIConfig.URL);
+        APIService service = retrofit.create(APIService.class);
+        Call<DataResponse> call = service.getData();
+        List<List<String>> date = new ArrayList<>();
+        call.enqueue(new Callback<DataResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<DataResponse> call, @NonNull Response<DataResponse> response) {
+                if (response.body() != null) {
+                    date.addAll(response.body().values);
+                    updateAdapter(date);
+                }
+            }
+            @Override
+            public void onFailure(Call<DataResponse> call, Throwable t) {
+                Log.e("ERRROR", t.getMessage());
+            }
+        });
+
+        return date;
     }
 
-    private void workWithSheets(GoogleAccountCredential credential) throws GeneralSecurityException, IOException {
-        sheetService = getSheetsService(credential);
-        ValueRange response = sheetService.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute();
-        values = response.getValues();
+    private void updateAdapter(List<List<String>> date) {
 
+    }
+
+    private void enqueueCallFromSheet() { /// мне не нравится способ обновления данных. Даныне остаютс только внутри аноннимного внутреннего класса
+        List<List<String>> data = new ArrayList<>();
+        call.enqueue(new Callback<DataResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<DataResponse> call, @NonNull Response<DataResponse> response) {
+                if (response.body() != null) {
+                    for (int i = 0; i < response.body().values.size(); i++) {
+                        int counter = 0;
+                        StringBuilder dataLessons = new StringBuilder();
+                        for (int j = 0; j < response.body().values.get(i).size(); j++) {
+                            String item = response.body().values.get(i).get(j);
+                            switch (i) {
+                                case 0:
+                                    if (!item.equals(""))
+                                        date.add(response.body().values.get(i).get(j));
+                                    break;
+                                case 1:
+                                    counter++;
+                                    dataLessons.append(counter).append(".").append(item).append("\n");
+                                    if ((counter == Constants.RANGE) | (j == (response.body().values.get(i).size()) - 1)) {
+                                        lessons.add(dataLessons.toString());
+                                        counter = 0;
+                                        dataLessons = new StringBuilder();
+                                    }
+                                    break;
+                                case 2:
+                                    counter++;
+                                    dataLessons.append(counter).append(".").append(item).append("\n");
+                                    if ((counter == Constants.RANGE) | (j == (response.body().values.get(i).size()) - 1)) {
+                                        homework.add(dataLessons.toString());
+                                        counter = 0;
+                                        dataLessons = new StringBuilder();
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                    while (date.size() > lessons.size())
+                        lessons.add("Not Found 404");
+                    while (date.size() > homework.size())
+                        homework.add("Not Found 404");
+                    data.add(date);
+                    data.add(lessons);
+                    data.add(homework);
+                    for (int i = 0; i < lessons.size(); i++)
+                        res.add(new ScheduleList(i, date.get(i), lessons.get(i), homework.get(i)));
+                    //setRecyclerView(res);  /// это как то вообще не праивльно выглядит, но по другому оно не работает, все элементы массивов исчезают
+
+                    getData(data);
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<DataResponse> call, Throwable t) {
+
+
+            }
+        });
+    }
+
+    private void getData(List<List<String>> data) {
+        res = new ArrayList<>();
+        for (int i = 0; i < data.size(); i++)
+            switch (i) {
+                case 0:
+                    date = data.get(i);
+                    break;
+                case 1:
+                    lessons = data.get(i);
+                    break;
+                case 2:
+                    homework = data.get(i);
+                    break;
+            }
+        for (int i = 0; i < date.size(); i++)
+            res.add(new ScheduleList(i, date.get(i), lessons.get(i), homework.get(i)));
+    }
+
+
+    public List<ScheduleList> getValues() {
+        /*if (res == null || res.isEmpty()) {
+            throw new IOException("Not found Data");
+        }*/
+        return res;
     }
 
     public List<String> getDate() {
@@ -112,10 +208,51 @@ public class SheetsWork {
         return lessons;
     }
 
-    public List<List<Object>> getValues() throws IOException {
-        if (values == null || values.isEmpty()) {
-            throw new IOException("Not found Data");
+
+    private void listDataSort(List<List<String>> data) {
+        for (int i = 0; i < data.size(); i++) {
+            int counter = 0;
+            StringBuilder dataLessons = new StringBuilder();
+            for (int j = 0; j < data.get(i).size(); j++) {
+                String item = data.get(i).get(j);
+                switch (i) {
+                    case 0:
+                        if (!item.equals(""))
+                            date.add(data.get(i).get(j));
+                        break;
+                    case 1:
+                        counter++;
+                        dataLessons.append(counter).append(".").append(item).append("\n");
+                        if ((counter == Constants.RANGE) | (j == (data.get(i).size()) - 1)) {
+                            lessons.add(dataLessons.toString());
+                            counter = 0;
+                            dataLessons = new StringBuilder();
+                        }
+                        break;
+                    case 2:
+                        counter++;
+                        dataLessons.append(counter).append(".").append(item).append("\n");
+                        if ((counter == Constants.RANGE) | (j == (data.get(i).size()) - 1)) {
+                            homework.add(dataLessons.toString());
+                            counter = 0;
+                            dataLessons = new StringBuilder();
+                        }
+                        break;
+                }
+            }
         }
-        return values;
+        while (date.size() > lessons.size())
+            lessons.add("Not Found 404");
+        while (date.size() > homework.size())
+            homework.add("Not Found 404");
+        data.add(date);
+        data.add(lessons);
+        data.add(homework);
+        for (int i = 0; i < lessons.size(); i++)
+            res.add(new ScheduleList(i, date.get(i), lessons.get(i), homework.get(i)));
+        //setRecyclerView(res);  /// это как то вообще не праивльно выглядит, но по другому оно не работает, все элементы массивов исчезают
+
+        getData(data);
     }
 }
+
