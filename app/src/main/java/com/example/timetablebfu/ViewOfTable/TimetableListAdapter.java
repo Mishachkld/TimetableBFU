@@ -25,8 +25,7 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
     private List<String> lessons;
     private List<String> homework;
     private List<String> days;
-    private List<? extends ScheduleList> res_list;
-
+    private final List<ScheduleList> res_list;
 
     public TimetableListAdapter(List<ScheduleList> res) {
         this.res_list = res;
@@ -34,8 +33,7 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
     }
 
     public TimetableListAdapter() {
-        this.res_list = new ArrayList<>();
-        getAllResources();
+        this(new ArrayList<>());
     }
 
     // Create new views (invoked by the layout manager)
@@ -55,8 +53,6 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
             viewHolder.getHomeWorkTextView().setText(homework.get(position));
             viewHolder.getLessonsTextView().setText(lessons.get(position));
             viewHolder.getDayOfWeakTextView().setText(days.get(position));
-            // Get element from your dataset at this position and replace the
-            // contents of the view with that element
         }
     }
 
@@ -79,9 +75,11 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
         }
     }
 
+
     @SuppressLint("NotifyDataSetChanged")
-    public void updateAdapter(List<ScheduleList> res_list) {
-        this.res_list = res_list;
+    public void updateAdapter(List<ScheduleList> newData) {
+        res_list.clear();
+        res_list.addAll(newData);
         getAllResources();
         notifyDataSetChanged();
     }
