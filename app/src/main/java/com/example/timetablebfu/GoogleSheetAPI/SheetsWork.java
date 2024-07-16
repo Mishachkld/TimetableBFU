@@ -63,7 +63,6 @@ public class SheetsWork {
         homework.add(new ArrayList<>());
         for (int indexColumn = 0; indexColumn < values.size(); indexColumn++) {
             int counter = 0;
-
             for (int indexRow = 0; indexRow < values.get(indexColumn).size(); indexRow++) {
                 String item = values.get(indexColumn).get(indexRow);
                 switch (indexColumn) {
@@ -83,12 +82,12 @@ public class SheetsWork {
                         break;
                     case 2:
                         counter++;
-                        String nameOfHomeWork = counter + ". " + item;
-                        homework.get(homework.size() - 1).add(nameOfHomeWork);
-                        if ((counter == Constants.RANGE) | (indexRow == (values.get(indexColumn).size()) - 1)) {
-                            homework.add(new ArrayList<>());
-                            counter = 0;
-                        }
+                        String nameOfHomeWork = item;
+                            homework.get(homework.size() - 1).add(nameOfHomeWork);
+                            if ((counter == Constants.RANGE) | (indexRow == (values.get(indexColumn).size()) - 1)) {
+                                homework.add(new ArrayList<>());
+                                counter = 0;
+                            }
                         break;
 
                 }
@@ -101,10 +100,10 @@ public class SheetsWork {
     private void fillArray(List<List<String>> lessons, List<List<String>> homework, int count, int sizeOfArray){
         List<String> lastLessons = lessons.get(lessons.size() - 2);
         List<String> lastHomework = homework.get(homework.size() - 2);
-       while (lastLessons.size() < 5){
+       while (lastLessons.size() < count){
            lastLessons.add("Not Found 404");
        }
-       while (lastHomework.size() < 5){
+       while (lastHomework.size() < count){
            lastHomework.add("Not Found 404");
        }
 

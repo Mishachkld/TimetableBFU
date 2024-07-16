@@ -2,6 +2,8 @@ package com.example.timetablebfu.ViewOfTable;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,19 +39,22 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // можно создать отдельно LinerLayout для уроков и для домашки
-        // тогда мы будем отдельно добавлять элементы для обоих Liner'ов
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.row_list_item, viewGroup, false);
-        List<TextView> homeworkTextViewList = addTextViewsInLinearLayout(5, view);
+        List<TextView> homeworkTextViewList = addTextViewsInLinearLayout(10, view);
         return new ViewHolder(view, homeworkTextViewList);
     }
 
     private List<TextView> addTextViewsInLinearLayout(int count, View view) {
         List<TextView> textViewList = new ArrayList<>();
-        LinearLayout layout = view.findViewById(R.id.lessons_LinearLayout);
+        LinearLayout layout = view.findViewById(R.id.homework_LinearLayout);
         for (int i = 0; i < count; i++) {
-            TextView text = generateTextViewWithTag(view,  TypeOfTextView.LESSON, 0);
+            TextView text;
+            if (i % 2 == 0) {
+                text = generateTextViewWithTag(view, TypeOfTextView.LESSON, i);
+            } else {
+                text = generateTextViewWithTag(view, TypeOfTextView.HOMEWORK, i);
+            }
             layout.addView(text);
             textViewList.add(text);
         }
@@ -60,12 +65,22 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int position) {
         if (!res_list.isEmpty() && (position < homework.size()) && (position < lessons.size()) && (position < days.size())) {
-            for (int i = 0; i < lessons.get(position).size(); i++) {
-                viewHolder.getDataTextView().get(i).setText(lessons.get(position).get(i));
+            int indexLessons = 0;
+            int indexHomework = 0;
+            for (TextView textView : viewHolder.getHomeworkTextViewList()) {
+                boolean isHomework = textView.getTag() == TypeOfTextView.HOMEWORK.toString();
+                if (!isHomework) {
+                    textView.setText(lessons.get(position).get(indexLessons % 5));
+                    indexLessons++;
+                } else {
+                    textView.setText(homework.get(position).get(indexHomework % 5));
+                    indexHomework++;
+                }
             }
-            viewHolder.getDayOfWeakTextView().setText(days.get(position));
         }
+        viewHolder.getDayOfWeakTextView().setText(days.get(position));
     }
+
 
     @Override
     public int getItemCount() {
@@ -84,20 +99,24 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
         }
     }
 
-
     // textView.setTag() ? "HOMEWORK_0" : "LESSON_0" - пример тэга
 
     /**
      * @param view
-     * @param type HOMEWORK or LESSON
+     * @param type  HOMEWORK or LESSON
      * @param index для индификации TextView
      * @return new TextView(); у которого тэг будет в виде: "HOMEWORK_" + index или "LESSON_" + "index"
      */
     private TextView generateTextViewWithTag(View view, TypeOfTextView type, int index) {
         TextView textView = new TextView(view.getContext());
-        textView.setTextSize(16);
         textView.setTextColor(Color.BLACK);
-        textView.setTag(type.toString() + "_" + index);
+        textView.setTextSize(20);
+        textView.setTag(type.toString());
+        if (TypeOfTextView.LESSON == type) {
+            textView.setTextSize(16);
+            textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
+        }
+
         return textView;
     }
 
@@ -115,25 +134,27 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private List<TextView> dataTextView;
+        private List<TextView> homeworkTextViewList;
+
+        private List<TextView> lessonsTextViewList;
 
         private final TextView dayOfWeakTextView;
-        private final TextView lessonsTextView;
-        private final TextView homeWorkTextView;
 
-        public ViewHolder(View view, List<TextView> dataTextView){
+        public ViewHolder(View view, List<TextView> homeworkTextViewList, List<TextView> lessonsTextViewList) {
+            this(view, homeworkTextViewList);
+            this.lessonsTextViewList = lessonsTextViewList;
+        }
+
+        public ViewHolder(View view, List<TextView> homeworkTextViewList) {
             this(view);
-            this.dataTextView = dataTextView;
+            this.homeworkTextViewList = homeworkTextViewList;
         }
 
         public ViewHolder(View view) {
             super(view);
-            dataTextView = new ArrayList<>();
+            homeworkTextViewList = new ArrayList<>();
             dayOfWeakTextView = view.findViewById(R.id.title_text);
 
-
-            lessonsTextView = view.findViewById(R.id.lessons);
-            homeWorkTextView = view.findViewById(R.id.homework);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -147,25 +168,19 @@ public class TimetableListAdapter extends RecyclerView.Adapter<TimetableListAdap
                     return true;
                 }
             });
-
-            // Define click listener for the ViewHolder's View
         }
 
-        public List<TextView> getDataTextView(){ return dataTextView; }
+        public List<TextView> getHomeworkTextViewList() {
+            return homeworkTextViewList;
+        }
 
         public TextView getDayOfWeakTextView() {
             return dayOfWeakTextView;
         }
 
-        public TextView getLessonsTextView() {
-            return lessonsTextView;
-        }
-
-        public TextView getHomeWorkTextView() {
-            return homeWorkTextView;
+        public List<TextView> getLessonsTextViewList() {
+            return lessonsTextViewList;
         }
 
     }
-
-
 }
