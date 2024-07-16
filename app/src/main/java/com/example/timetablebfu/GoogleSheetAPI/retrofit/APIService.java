@@ -7,7 +7,6 @@ import com.example.timetablebfu.GoogleSheetAPI.APIConfig;
 import com.example.timetablebfu.GoogleSheetAPI.KeyAPI;
 
 import retrofit2.Call;
-import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
@@ -18,7 +17,6 @@ public interface APIService {
     Call<DataResponse> getData();
     @GET("v4/spreadsheets/" + SPREADSHEET_ID + "/values/" + "{list}" +"?majorDimension=COLUMNS&"+ "key=" + KeyAPI.GOOGLE_API_KEY)
     Call<DataResponse> getData(@Path(value = "list") String list);
-
 
     @GET("v4/spreadsheets/" + SPREADSHEET_ID + "/values/" + "{list}" + "?" + "{dimension}" + "&key=" + KeyAPI.GOOGLE_API_KEY)
     Call<DataResponse> getData(@Path(value = "list") String list, @Query("dimension") String dimension);
